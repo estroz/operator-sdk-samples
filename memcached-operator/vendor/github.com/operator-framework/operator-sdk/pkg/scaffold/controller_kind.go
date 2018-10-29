@@ -31,7 +31,7 @@ type ControllerKind struct {
 func (s *ControllerKind) GetInput() (input.Input, error) {
 	if s.Path == "" {
 		fileName := s.Resource.LowerKind + "_controller.go"
-		s.Path = filepath.Join(controllerDir, s.Resource.LowerKind, fileName)
+		s.Path = filepath.Join(ControllerDir, s.Resource.LowerKind, fileName)
 	}
 	// Error if this file exists.
 	s.IfExistsAction = input.Error
@@ -108,7 +108,6 @@ var _ reconcile.Reconciler = &Reconcile{{ .Resource.Kind }}{}
 
 // Reconcile{{ .Resource.Kind }} reconciles a {{ .Resource.Kind }} object
 type Reconcile{{ .Resource.Kind }} struct {
-	// TODO: Clarify the split client
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client

@@ -12,41 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scaffold
+package ansible
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
-
+	"github.com/operator-framework/operator-sdk/pkg/scaffold"
 	"github.com/operator-framework/operator-sdk/pkg/scaffold/input"
 )
 
-// Cr is the input needed to generate a deploy/crds/<group>_<version>_<kind>_cr.yaml file
-type Cr struct {
+const WatchesYamlFile = "watches.yaml"
+
+// WatchesYAML - watches yaml input wrapper
+type WatchesYAML struct {
 	input.Input
 
-	// Resource defines the inputs for the new custom resource
-	Resource *Resource
+	Resource         scaffold.Resource
+	GeneratePlaybook bool
 }
 
-func (s *Cr) GetInput() (input.Input, error) {
+// GetInput - gets the input
+func (s *WatchesYAML) GetInput() (input.Input, error) {
 	if s.Path == "" {
-		fileName := fmt.Sprintf("%s_%s_%s_cr.yaml",
-			strings.ToLower(s.Resource.Group),
-			strings.ToLower(s.Resource.Version),
-			s.Resource.LowerKind)
-		s.Path = filepath.Join(CrdsDir, fileName)
+		s.Path = WatchesYamlFile
 	}
-	s.TemplateBody = crTemplate
+	s.TemplateBody = watchesYAMLTmpl
 	return s.Input, nil
 }
 
-const crTemplate = `apiVersion: {{ .Resource.APIVersion }}
-kind: {{ .Resource.Kind }}
-metadata:
-  name: example-{{ .Resource.LowerKind }}
-spec:
-  # Add fields here
-  size: 3
+const watchesYAMLTmpl = `---
+- version: {{.Resource.Version}}
+  group: {{.Resource.FullGroup}}
+  kind: {{.Resource.Kind}}
+{{ if .GeneratePlaybook }}  playbook: /opt/ansible/playbook.yaml{{ else }}  role: /opt/ansible/roles/{{.Resource.Kind}}{{ end }}
 `
